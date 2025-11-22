@@ -1,0 +1,18 @@
+# Telegram Bot
+python-telegram-bot==21.10
+
+# OpenAI (upgraded for Python 3.14 compatibility)
+openai>=2.8.1
+
+# Task Scheduling
+APScheduler==3.10.4
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Numerical operations for embeddings
+# Using >= to get latest version with pre-built wheels
+numpy>=1.26.0,<2.0.0
+
+# Database (included in Python standard library, but listed for clarity)
+# sqlite3

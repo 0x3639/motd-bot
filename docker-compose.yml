@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  motd-bot:
+    build: .
+    container_name: zenon-motd-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Persist database across container restarts
+      - ./data:/app/data
+      # Mount data files
+      - ./data/kaine_personality.md:/app/data/kaine_personality.md:ro
+      - ./data/mrkainez_posts.json:/app/data/mrkainez_posts.json:ro
+    environment:
+      # Override database path to use volume
+      - DATABASE_PATH=/app/data/motd.db
+    # Healthcheck to ensure bot is running
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; os.path.exists('/app/data/motd.db') or exit(1)"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
