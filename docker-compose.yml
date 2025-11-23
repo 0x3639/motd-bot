@@ -16,6 +16,8 @@ services:
     environment:
       # Override database path to use volume
       - DATABASE_PATH=/app/data/motd.db
+      # Set container timezone to match TIMEZONE env var
+      - TZ=America/Chicago
     # Healthcheck to ensure bot is running
     healthcheck:
       test: ["CMD", "python", "-c", "import os; os.path.exists('/app/data/motd.db') or exit(1)"]

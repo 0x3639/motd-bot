@@ -581,6 +581,27 @@ grep DRY_RUN .env
 docker-compose run --rm motd-bot python -c "from config import Config; print(Config.TELEGRAM_CHANNEL_ID)"
 ```
 
+### Bot Posting Duplicate Messages
+
+**Symptom:** Bot posts the same message multiple days in a row
+
+**Root Cause:** Docker container timezone mismatch. If the container runs in UTC but your schedule is set for CST/EST, the bot may think it's still "yesterday" when the scheduler runs.
+
+**Solution:** Container timezone is now auto-configured from `TIMEZONE` env var.
+
+Verify it's working:
+```bash
+# Check container timezone
+docker-compose run --rm motd-bot date
+
+# Should show your timezone (e.g., "CST" or "EST"), not UTC
+```
+
+If showing UTC, ensure:
+1. You've rebuilt the container after the timezone fix: `docker-compose up -d --build`
+2. Your `TIMEZONE` env var matches your schedule (e.g., `America/Chicago` for CST)
+3. Both `Dockerfile` and `docker-compose.yml` are up to date
+
 ### Messages Too Similar
 
 **Symptom:** Frequent "Message too similar" warnings
