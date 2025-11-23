@@ -2,6 +2,7 @@
 import sqlite3
 import hashlib
 import pickle
+import pytz
 from datetime import datetime, timedelta
 from typing import Optional, List, Tuple
 from config import Config
@@ -75,14 +76,16 @@ class MessageDatabase:
         return row['content'] if row else None
 
     def get_today_message(self) -> Optional[str]:
-        """Get today's message if it exists."""
-        today = datetime.now().strftime('%Y-%m-%d')
+        """Get today's message if it exists (timezone-aware)."""
+        tz = pytz.timezone(Config.TIMEZONE)
+        today = datetime.now(tz).strftime('%Y-%m-%d')
         return self.get_message_by_date(today)
 
     def get_recent_messages(self, days: int = None) -> List[str]:
-        """Get messages from the last N days."""
+        """Get messages from the last N days (timezone-aware)."""
         days = days or Config.HISTORY_DAYS
-        cutoff_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+        tz = pytz.timezone(Config.TIMEZONE)
+        cutoff_date = (datetime.now(tz) - timedelta(days=days)).strftime('%Y-%m-%d')
         cursor = self.conn.cursor()
         cursor.execute(
             'SELECT content FROM messages WHERE date >= ? ORDER BY date DESC',
@@ -91,9 +94,10 @@ class MessageDatabase:
         return [row['content'] for row in cursor.fetchall()]
 
     def get_recent_embeddings(self, days: int = None) -> List[Tuple[str, List[float]]]:
-        """Get messages with embeddings from the last N days."""
+        """Get messages with embeddings from the last N days (timezone-aware)."""
         days = days or Config.HISTORY_DAYS
-        cutoff_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+        tz = pytz.timezone(Config.TIMEZONE)
+        cutoff_date = (datetime.now(tz) - timedelta(days=days)).strftime('%Y-%m-%d')
         cursor = self.conn.cursor()
         cursor.execute(
             'SELECT content, embedding FROM messages WHERE date >= ? AND embedding IS NOT NULL ORDER BY date DESC',
@@ -116,9 +120,10 @@ class MessageDatabase:
         return result['count'] > 0
 
     def cleanup_old_messages(self, days: int = None):
-        """Delete messages older than specified days."""
+        """Delete messages older than specified days (timezone-aware)."""
         days = days or Config.HISTORY_DAYS
-        cutoff_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+        tz = pytz.timezone(Config.TIMEZONE)
+        cutoff_date = (datetime.now(tz) - timedelta(days=days)).strftime('%Y-%m-%d')
         cursor = self.conn.cursor()
         cursor.execute('DELETE FROM messages WHERE date < ?', (cutoff_date,))
         deleted = cursor.rowcount

@@ -48,8 +48,9 @@ class MOTDBot:
         """Handle /motd command - send today's message."""
         logger.info(f"MOTD command received from {update.effective_user.id}")
 
-        # Check if we already have today's message
-        today = datetime.now().strftime('%Y-%m-%d')
+        # Check if we already have today's message (timezone-aware)
+        tz = pytz.timezone(Config.TIMEZONE)
+        today = datetime.now(tz).strftime('%Y-%m-%d')
         existing_message = self.db.get_message_by_date(today)
 
         if existing_message:
@@ -71,10 +72,12 @@ class MOTDBot:
 
     async def generate_daily_message(self) -> str:
         """Generate today's message if it doesn't exist."""
-        today = datetime.now().strftime('%Y-%m-%d')
+        # Use timezone-aware date to match scheduler
+        tz = pytz.timezone(Config.TIMEZONE)
+        today = datetime.now(tz).strftime('%Y-%m-%d')
 
         # Check if message already exists for today
-        existing_message = self.db.get_today_message()
+        existing_message = self.db.get_message_by_date(today)
         if existing_message:
             logger.info("Using existing message for today")
             return existing_message
